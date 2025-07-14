@@ -133,6 +133,8 @@
             <button id="measureBtn" class="btn btn-info">📏 Measure</button>
             <button id="colorModeBtn" class="btn btn-info">🎨 Color Mode</button>
             <button id="pointSizeBtn" class="btn btn-info">📏 Point Size</button>
+            <button id="saveViewStateBtn" class="btn btn-secondary">💾 Save View</button>
+            <button id="loadViewStateBtn" class="btn btn-secondary">📁 Load View</button>
         </div>
     </div>
     
@@ -163,12 +165,43 @@
         
         <hr style="margin: 15px 0; border-color: rgba(255,255,255,0.3);">
         
+        <h4>🔍 View Details</h4>
+        <div class="stats">
+            <div><strong>📍 Current View:</strong> <span id="currentView">Default</span></div>
+            <div><strong>🎯 Zoom Level:</strong> <span id="zoomLevel">1.0x</span></div>
+            <div><strong>📐 Visible Points:</strong> <span id="visiblePoints">Loading...</span></div>
+            <div><strong>🎨 Rendered:</strong> <span id="renderedPoints">0</span></div>
+            <div><strong>⚡ FPS:</strong> <span id="currentFPS">0</span></div>
+        </div>
+        
+        <hr style="margin: 15px 0; border-color: rgba(255,255,255,0.3);">
+        
+        <h4>📏 Measurement Tools</h4>
+        <div class="measurement-controls">
+            <button id="measureDistanceBtn" class="btn btn-info" style="width: 48%; margin: 2px;">📏 Distance</button>
+            <button id="measureAreaBtn" class="btn btn-info" style="width: 48%; margin: 2px;">📐 Area</button>
+            <button id="clearMeasurementsBtn" class="btn btn-danger" style="width: 48%; margin: 2px;">🗑️ Clear</button>
+            <button id="saveViewBtn" class="btn btn-secondary" style="width: 48%; margin: 2px;">💾 Save View</button>
+        </div>
+        
+        <div id="measurementResults" style="margin-top: 10px; font-size: 0.9em; display: none;">
+            <div><strong>📏 Distance:</strong> <span id="lastDistance">-</span></div>
+            <div><strong>📐 Area:</strong> <span id="lastArea">-</span></div>
+            <div><strong>📊 Points:</strong> <span id="measurementPoints">-</span></div>
+        </div>
+        
+        <hr style="margin: 15px 0; border-color: rgba(255,255,255,0.3);">
+        
         <h4>🎮 Controls</h4>
         <div style="font-size: 0.8em; line-height: 1.4;">
             <div><strong>Mouse:</strong> Rotate view</div>
             <div><strong>Scroll:</strong> Zoom in/out</div>
             <div><strong>Right-click:</strong> Pan view</div>
             <div><strong>Double-click:</strong> Focus point</div>
+            <div><strong>C:</strong> Color mode</div>
+            <div><strong>+/-:</strong> Point size</div>
+            <div><strong>R:</strong> Reset view</div>
+            <div><strong>M:</strong> Measure mode</div>
         </div>
         
         <hr style="margin: 15px 0; border-color: rgba(255,255,255,0.3);">
