@@ -20,20 +20,37 @@ class PointCloudViewer {
             button: 0
         };
         this.animationId = null;
+        
+        // Enhancement: Add color modes and point size control
+        this.colorMode = 'elevation'; // 'elevation', 'random', 'intensity'
+        this.pointSize = 2;
+        this.viewPresets = {
+            default: { scale: 1, offsetX: 0, offsetY: 0, rotation: 0 },
+            topDown: { scale: 1.5, offsetX: 0, offsetY: 0, rotation: 0 },
+            angled: { scale: 1.2, offsetX: 0, offsetY: 0, rotation: 0.5 }
+        };
     }
 
     init() {
+        console.log('🚀 Starting point cloud viewer initialization...');
         this.updateProgress('Loading point cloud data...', 25);
         
         // Load data with fallback
         fetch('/api/pointcloud/data?limit=500')
-            .then(response => response.json())
+            .then(response => {
+                console.log('📡 API response received:', response.status);
+                if (!response.ok) {
+                    throw new Error(`HTTP error! status: ${response.status}`);
+                }
+                return response.json();
+            })
             .then(data => {
+                console.log('✅ Data loaded successfully:', data);
                 this.updateProgress('Creating enhanced visualization...', 75);
                 setTimeout(() => this.createEnhancedViewer(data), 100);
             })
             .catch(error => {
-                console.warn('API failed, using demo data:', error);
+                console.warn('⚠️ API failed, using demo data:', error);
                 this.updateProgress('Using demo data...', 50);
                 setTimeout(() => this.createDemoViewer(), 100);
             });
@@ -75,6 +92,11 @@ class PointCloudViewer {
         this.startAnimation();
         
         this.finishLoading('Enhanced point cloud viewer ready!');
+        
+        // Setup enhanced controls after DOM is ready
+        setTimeout(() => {
+            this.setupEnhancedControls();
+        }, 100);
     }
 
     setupMouseControls() {
@@ -129,6 +151,96 @@ class PointCloudViewer {
         this.canvas.addEventListener('contextmenu', (e) => e.preventDefault());
     }
 
+    setupEnhancedControls() {
+        console.log('🔧 Setting up enhanced controls...');
+        
+        // Color mode button
+        const colorModeBtn = document.getElementById('colorModeBtn');
+        console.log('Color mode button found:', colorModeBtn);
+        if (colorModeBtn) {
+            colorModeBtn.addEventListener('click', () => {
+                console.log('Color mode button clicked! Current mode:', this.colorMode);
+                const modes = ['elevation', 'random', 'intensity'];
+                const currentIndex = modes.indexOf(this.colorMode);
+                this.colorMode = modes[(currentIndex + 1) % modes.length];
+                console.log('New color mode:', this.colorMode);
+                
+                // Update UI
+                const modeNames = { 'elevation': 'Elevation', 'random': 'Random', 'intensity': 'Intensity' };
+                const currentModeEl = document.getElementById('currentColorMode');
+                if (currentModeEl) {
+                    currentModeEl.textContent = modeNames[this.colorMode];
+                }
+                this.render();
+            });
+        } else {
+            console.warn('⚠️ Color mode button not found!');
+        }
+
+        // Point size button
+        const pointSizeBtn = document.getElementById('pointSizeBtn');
+        console.log('Point size button found:', pointSizeBtn);
+        if (pointSizeBtn) {
+            pointSizeBtn.addEventListener('click', () => {
+                console.log('Point size button clicked! Current size:', this.pointSize);
+                const sizes = [1, 2, 3, 4, 5];
+                const currentIndex = sizes.indexOf(this.pointSize);
+                this.pointSize = sizes[(currentIndex + 1) % sizes.length];
+                console.log('New point size:', this.pointSize);
+                
+                const currentSizeEl = document.getElementById('currentPointSize');
+                if (currentSizeEl) {
+                    currentSizeEl.textContent = this.pointSize + 'px';
+                }
+                this.render();
+            });
+        } else {
+            console.warn('⚠️ Point size button not found!');
+        }
+
+        // Reset view button
+        const resetViewBtn = document.getElementById('resetViewBtn');
+        if (resetViewBtn) {
+            resetViewBtn.addEventListener('click', () => this.resetView());
+        }
+    }
+
+    resetView() {
+        this.transform = { ...this.viewPresets.default };
+        this.render();
+    }
+
+    getPointColor(point) {
+        switch(this.colorMode) {
+            case 'elevation':
+                const elevationRange = this.bounds.maxY - this.bounds.minY;
+                const elevationRatio = (point.y - this.bounds.minY) / elevationRange;
+                
+                if (elevationRatio < 0.2) return '#0066cc'; // Deep blue
+                if (elevationRatio < 0.4) return '#00cc66'; // Green
+                if (elevationRatio < 0.6) return '#cccc00'; // Yellow
+                if (elevationRatio < 0.8) return '#cc6600'; // Orange
+                return '#cc0000'; // Red
+                
+            case 'random':
+                const hash = Math.abs(point.x * 73856093 + point.y * 19349663 + point.z * 83492791);
+                const r = (hash & 0xFF0000) >> 16;
+                const g = (hash & 0x00FF00) >> 8;
+                const b = hash & 0x0000FF;
+                return `rgb(${r % 256}, ${g % 256}, ${b % 256})`;
+                
+            case 'intensity':
+                const distanceFromCenter = Math.sqrt(point.x * point.x + point.z * point.z);
+                const maxDistance = 141;
+                const intensityRatio = Math.min(distanceFromCenter / maxDistance, 1);
+                const intensity = Math.floor(255 * (1 - intensityRatio));
+                return `rgb(${intensity}, ${intensity}, ${255})`;
+                
+            default:
+                return '#ffffff';
+        }
+    }
+
     render() {
         // Clear canvas
         this.ctx.fillStyle = '#000';
@@ -161,18 +273,12 @@ class PointCloudViewer {
             const x = px * baseScale;
             const y = pz * baseScale;
             
-            // Calculate size based on elevation and distance
+            // Calculate size based on elevation and user preference
             const elevationNorm = (py - this.bounds.minY) / (this.bounds.maxY - this.bounds.minY);
-            const size = Math.max(1, 3 + elevationNorm * 2);
+            const size = Math.max(1, this.pointSize + (elevationNorm * 1));
             
-            // Color based on elevation and RGB
-            if (point.rgb) {
-                const brightness = 0.8 + elevationNorm * 0.4; // Higher elevation = brighter
-                this.ctx.fillStyle = `rgb(${Math.floor(point.rgb.r * brightness)}, ${Math.floor(point.rgb.g * brightness)}, ${Math.floor(point.rgb.b * brightness)})`;
-            } else {
-                const intensity = Math.floor(elevationNorm * 255);
-                this.ctx.fillStyle = `rgb(${intensity}, ${intensity}, ${Math.min(255, intensity + 50)})`;
-            }
+            // Use new color system
+            this.ctx.fillStyle = this.getPointColor(point);
             
             // Draw point
             this.ctx.beginPath();
@@ -229,6 +335,11 @@ class PointCloudViewer {
         this.startAnimation();
         
         this.finishLoading('Demo viewer with enhanced controls ready!');
+        
+        // Setup enhanced controls after DOM is ready
+        setTimeout(() => {
+            this.setupEnhancedControls();
+        }, 100);
     }
 
     generateDemoData() {
@@ -284,10 +395,17 @@ class PointCloudViewer {
     }
 
     finishLoading(message) {
+        console.log('🏁 finishLoading called with message:', message);
         setTimeout(() => {
-            document.getElementById('loading').style.display = 'none';
+            const loadingEl = document.getElementById('loading');
+            console.log('Loading element found:', loadingEl);
+            if (loadingEl) {
+                loadingEl.style.display = 'none';
+                console.log('Loading screen hidden');
+            }
             
             const statusEl = document.querySelector('#viewerStatus span');
+            console.log('Status element found:', statusEl);
             if (statusEl) {
                 statusEl.textContent = message;
                 statusEl.style.color = '#28a745';
@@ -348,11 +466,13 @@ function setupSimpleControls() {
 
 // Start immediately when DOM loads
 document.addEventListener('DOMContentLoaded', () => {
-    console.log('🚀 Starting ultra-simple viewer...');
+    console.log('🚀 DOM loaded, starting point cloud viewer...');
     setupSimpleControls();
     
     // Start immediately - no delays
-    showImmediateViewer();
+    setTimeout(() => {
+        showImmediateViewer();
+    }, 100);
 });
 
 // Fallback if DOMContentLoaded already fired
@@ -362,5 +482,7 @@ if (document.readyState === 'loading') {
     // DOM already loaded
     console.log('🚀 DOM ready, starting viewer immediately...');
     setupSimpleControls();
-    showImmediateViewer();
+    setTimeout(() => {
+        showImmediateViewer();
+    }, 100);
 }
