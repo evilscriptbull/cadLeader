@@ -1,216 +1,395 @@
-# CAD Delivery System - Software Use Cases
-## Real-Time Drone Data Processing & Leadership Dashboard
+# CAD Leader - Point Cloud Viewer & Leadership Dashboard
 
-### System Overview
-A CAD delivery system that processes real-time drone data (.laz point clouds and .tif imagery) to provide automated leadership updates and insights for project management and decision-making.
+> **Real-time drone data processing and interactive 3D point cloud visualization for CAD project leadership**
 
----
+[![Node.js](https://img.shields.io/badge/Node.js-18+-green.svg)](https://nodejs.org/)
+[![Express](https://img.shields.io/badge/Express-4.18+-blue.svg)](https://expressjs.com/)
+[![License](https://img.shields.io/badge/License-MIT-yellow.svg)](LICENSE)
 
-## Primary Use Cases
+## 🚀 Quick Start
 
-### UC-001: Real-Time Data Ingestion
-**Actor:** Drone Data Collection System  
-**Description:** Automatically receive and process incoming .laz and .tif files from drone missions  
-**Preconditions:** Drone mission is active and transmitting data  
-**Flow:**
-1. System monitors designated data ingestion endpoints
-2. Validates incoming .laz (LiDAR) and .tif (imagery) files
-3. Performs data integrity checks and format validation
-4. Stores raw data in secure cloud storage with metadata
-5. Triggers automated processing pipeline
-6. Logs ingestion status and file metrics
+### Prerequisites
+- **Node.js** (v18 or higher) - [Download here](https://nodejs.org/)
+- **npm** (comes with Node.js)
+- **Git** (for cloning the repository)
 
-**Success Criteria:** Files processed within 30 seconds of receipt with 99.9% accuracy
+### Installation
 
----
+#### For Windows Users
 
-### UC-002: Automated CAD Model Generation
-**Actor:** Processing Engine  
-**Description:** Convert drone data into CAD-compatible formats and models  
-**Preconditions:** Valid .laz and .tif files available  
-**Flow:**
-1. Extract point cloud data from .laz files
-2. Process .tif imagery for texture mapping
-3. Generate 3D mesh models from point clouds
-4. Create CAD-compatible formats (DWG, DXF, IFC)
-5. Apply texture mapping from imagery
-6. Perform quality assurance checks
-7. Store processed models in CAD library
+1. **Clone the repository**
+   ```cmd
+   git clone https://github.com/evilscriptbull/cadLeader.git
+   cd cadLeader
+   ```
 
-**Success Criteria:** CAD models generated within 5 minutes with geometric accuracy ±2cm
+2. **Install dependencies**
+   ```cmd
+   npm install
+   ```
 
----
+3. **Start the application**
+   ```cmd
+   npm start
+   ```
+   
+   **Alternative**: Use the setup script
+   ```cmd
+   setup.bat
+   ```
 
-### UC-003: Leadership Dashboard Updates
-**Actor:** Executive Dashboard System  
-**Description:** Provide real-time project status updates to leadership  
-**Preconditions:** Processed CAD data available  
-**Flow:**
-1. Analyze current vs. planned project progress
-2. Generate key performance indicators (KPIs)
-3. Create visual progress reports and 3D comparisons
-4. Identify critical issues or delays
-5. Update executive dashboard with new metrics
-6. Send automated notifications for significant changes
-7. Generate executive summary reports
+#### For Linux/macOS/WSL Users
 
-**Success Criteria:** Dashboard updated within 2 minutes of data processing completion
+1. **Clone the repository**
+   ```bash
+   git clone https://github.com/evilscriptbull/cadLeader.git
+   cd cadLeader
+   ```
 
----
+2. **Install dependencies**
+   ```bash
+   npm install
+   ```
 
-### UC-004: Change Detection & Analysis
-**Actor:** Analysis Engine  
-**Description:** Detect and analyze changes between drone surveys  
-**Preconditions:** Historical CAD data available for comparison  
-**Flow:**
-1. Compare current survey data with baseline/previous surveys
-2. Identify geometric changes and deviations
-3. Calculate volume differences and material quantities
-4. Assess progress against project timeline
-5. Flag potential issues or unauthorized changes
-6. Generate change analysis reports
-7. Update project metrics and forecasts
+3. **Start the application**
+   ```bash
+   npm start
+   ```
+   
+   **Alternative**: Use the setup script
+   ```bash
+   chmod +x setup.sh
+   ./setup.sh
+   ```
 
-**Success Criteria:** Change detection completed within 3 minutes with 95% accuracy
+#### For WSL (Windows Subsystem for Linux) Users
 
----
+1. **Open WSL terminal** (Ubuntu recommended)
 
-### UC-005: Automated Quality Assurance
-**Actor:** QA Validation System  
-**Description:** Validate CAD deliverables against project specifications  
-**Preconditions:** CAD models and project requirements available  
-**Flow:**
-1. Load project specifications and tolerance requirements
-2. Perform geometric validation of CAD models
-3. Check dimensional accuracy and compliance
-4. Validate material classifications and quantities
-5. Generate quality assurance reports
-6. Flag non-compliant elements for review
-7. Update quality metrics dashboard
+2. **Clone the repository**
+   ```bash
+   git clone https://github.com/evilscriptbull/cadLeader.git
+   cd cadLeader
+   ```
 
-**Success Criteria:** QA validation completed within 4 minutes with detailed compliance report
+3. **Install dependencies**
+   ```bash
+   npm install
+   ```
 
----
+4. **Start the application**
+   ```bash
+   npm start
+   ```
 
-### UC-006: Stakeholder Notification System
-**Actor:** Notification Service  
-**Description:** Automatically notify stakeholders of important updates  
-**Preconditions:** Stakeholder contact lists and notification rules configured  
-**Flow:**
-1. Monitor for trigger events (milestones, issues, changes)
-2. Determine relevant stakeholders based on event type
-3. Generate appropriate notification content
-4. Send notifications via multiple channels (email, SMS, app)
-5. Track notification delivery and responses
-6. Log notification history for audit purposes
+5. **Access from Windows browser**
+   - The application will be available at `http://localhost:3000/`
+   - WSL automatically forwards the port to Windows
 
-**Success Criteria:** Notifications sent within 1 minute of trigger event
+### Verify Installation
 
----
+After starting the application, you should see:
+```
+🚀 CAD Leadership Dashboard OPERATIONAL on port 3000
+📊 Dashboard: http://localhost:3000
+🔍 Health Check: http://localhost:3000/api/health
+```
 
-### UC-007: Progress Tracking & Forecasting
-**Actor:** Analytics Engine  
-**Description:** Track project progress and generate forecasts  
-**Preconditions:** Historical project data and timelines available  
-**Flow:**
-1. Analyze current progress against project milestones
-2. Calculate completion percentages for project phases
-3. Generate progress forecasts using historical data
-4. Identify potential delays or acceleration opportunities
-5. Update project timelines and resource requirements
-6. Create progress visualization reports
-7. Generate recommendations for optimization
+### Access Points
+- **Main Dashboard**: http://localhost:3000/
+- **Enhanced Point Cloud Viewer**: http://localhost:3000/pointcloud.html
+- **Health Check**: http://localhost:3000/api/health
 
-**Success Criteria:** Progress analysis updated daily with 85% forecast accuracy
+## 🎯 Features
 
----
+### ✨ **Enhanced Point Cloud Viewer**
+- **Interactive 3D Visualization** with Three.js
+- **Mouse Controls**: Pan, zoom, rotate with smooth animations
+- **Realistic Terrain Generation**: Hills, valleys, ridges, plateaus, and water bodies
+- **Elevation-based Coloring**: Visual height representation
+- **Real-time Data Processing**: Live point cloud data from LAZ files
 
-### UC-008: Mobile Field Access
-**Actor:** Field Personnel  
-**Description:** Access CAD data and updates via mobile devices  
-**Preconditions:** Mobile app installed and user authenticated  
-**Flow:**
-1. User logs into mobile application
-2. Access current CAD models and project data
-3. View real-time updates and notifications
-4. Compare field conditions with CAD models
-5. Submit field reports and observations
-6. Access offline cached data when needed
-7. Sync updates when connectivity restored
+### 📊 **Leadership Dashboard**
+- **Real-time Project Status** updates
+- **Key Performance Indicators** (KPIs)
+- **Progress Tracking** and forecasting
+- **Change Detection** between surveys
+- **Automated Quality Assurance** reporting
 
-**Success Criteria:** Mobile access available 24/7 with offline capability
+### 🔧 **Technical Capabilities**
+- **LAZ/LAS File Processing** - Point cloud data analysis
+- **DEM/TIF Support** - Digital elevation models
+- **RESTful API** - For integration with other systems
+- **Scalable Architecture** - Express.js backend with modular design
+- **Security Features** - Content Security Policy (CSP) and secure headers
 
----
+## 🖥️ Usage
 
-### UC-009: Compliance Reporting
-**Actor:** Compliance Management System  
-**Description:** Generate automated compliance reports for regulatory requirements  
-**Preconditions:** Regulatory requirements and templates configured  
-**Flow:**
-1. Collect relevant project data and metrics
-2. Apply regulatory compliance rules and standards
-3. Generate formatted compliance reports
-4. Validate report accuracy and completeness
-5. Submit reports to regulatory systems
-6. Track submission status and responses
-7. Archive reports for audit purposes
+### Basic Navigation
+- **Left Mouse Drag**: Pan the view
+- **Right Mouse Drag**: Rotate the view
+- **Mouse Wheel**: Zoom in/out
+- **Point Cloud Data**: Automatically loads realistic terrain with elevation features
 
-**Success Criteria:** Compliance reports generated within 24 hours of data availability
+### API Endpoints
+- `GET /api/health` - Server health status
+- `GET /api/pointcloud/data` - Point cloud data with terrain features
+- `GET /api/leadership/report` - Leadership analytics report
+- `POST /api/upload` - Upload new LAZ/TIF files
 
----
+## 📁 Project Structure
 
-### UC-010: Data Security & Backup
-**Actor:** Security Management System  
-**Description:** Ensure data security and maintain backups  
-**Preconditions:** Security policies and backup schedules configured  
-**Flow:**
-1. Encrypt all data at rest and in transit
-2. Perform regular automated backups
-3. Monitor for security threats and anomalies
-4. Maintain access controls and audit logs
-5. Test backup restoration procedures
-6. Ensure compliance with data protection regulations
-7. Generate security status reports
+```
+cadLeader/
+├── 📄 app.js                 # Main Node.js server application
+├── 📄 package.json          # Dependencies and scripts
+├── 📄 readme.md             # This file
+├── 📄 STRUCTURE.md          # Detailed repository structure
+│
+├── 📂 public/               # Web interface files
+│   ├── 📄 index.html        # Main dashboard
+│   ├── 📄 pointcloud.html   # Enhanced 3D point cloud viewer
+│   └── 📂 js/               # Client-side JavaScript
+│       ├── 📄 pointcloud-viewer.js    # Enhanced 3D viewer with controls
+│       └── 📄 simple-test.js          # Simple 2D test viewer
+│
+├── 📂 data/                 # Data files and assets
+│   ├── 📂 sample-files/     # Sample LAZ and DEM files
+│   └── 📂 reports/          # Survey accuracy reports
+│
+├── 📂 tools/                # Development and testing tools
+│   ├── 📂 testing/          # Test scripts and utilities
+│   └── 📂 validation/       # Deployment validation tools
+│
+├── 📂 docs/                 # Documentation
+│   ├── 📄 USE_CASES.md      # Detailed system use cases
+│   ├── 📄 LEADERSHIP_GUIDE.md
+│   └── 📄 POINTCLOUD_VIEWER.md
+│
+├── 📂 scripts/              # Utility scripts
+├── 📂 logs/                 # Application logs
+├── 📂 uploads/              # User uploaded files
+└── 📂 temp/                 # Temporary files (not committed)
+```
 
-**Success Criteria:** 99.9% data availability with zero security breaches
+## 🔧 Development
 
----
+### Running Tests
+```bash
+# Run comprehensive test suite
+npm test
 
-## Secondary Use Cases
+# Or run directly (Linux/macOS/WSL)
+bash tools/testing/comprehensive-test.sh
 
-### UC-011: Historical Data Analysis
-- Analyze trends across multiple projects
-- Generate lessons learned reports
-- Benchmark performance metrics
+# Windows alternative
+# Use Git Bash or WSL to run the test script
+```
 
-### UC-012: Resource Optimization
-- Optimize drone flight paths and schedules
-- Manage processing resource allocation
-- Predict infrastructure requirements
+### Health Check
+```bash
+# Check server health
+curl http://localhost:3000/api/health
 
-### UC-013: Integration Management
-- Connect with existing CAD software
-- Integrate with project management tools
-- Sync with enterprise resource planning systems
+# Test point cloud data
+curl http://localhost:3000/api/pointcloud/data?limit=10
 
----
+# Windows alternative (if curl not available)
+# Open browser and navigate to http://localhost:3000/api/health
+```
 
-## Technical Requirements
+### Development Mode
+```bash
+# Start with auto-reload (requires nodemon)
+npm run dev
 
-### Performance Requirements
+# Install nodemon globally if not available
+npm install -g nodemon
+
+# Check application logs
+# Linux/macOS/WSL:
+tail -f logs/combined.log
+
+# Windows:
+type logs\combined.log
+```
+
+### Available Scripts
+- `npm start` - Start the application
+- `npm run dev` - Start in development mode with auto-reload
+- `npm test` - Run comprehensive test suite
+- `npm run health` - Quick health check
+- `npm run setup` - Complete setup process
+- `npm run build` - Build for production (all platforms)
+- `npm run build-win` - Build for Windows
+- `npm run build-linux` - Build for Linux
+
+### Platform-Specific Notes
+
+#### **Windows Development**
+- Use PowerShell or Command Prompt
+- Git Bash recommended for bash scripts
+- Visual Studio Code with WSL extension for best experience
+
+#### **Linux/macOS Development**
+- Standard terminal works perfectly
+- All bash scripts run natively
+
+#### **WSL Development**
+- Best of both worlds - Linux tools with Windows integration
+- Files accessible from Windows Explorer at `\\wsl$\Ubuntu\home\[username]\Code\cadLeader`
+- Use VS Code with WSL extension for seamless development
+
+## 📋 System Requirements
+
+### **Minimum Requirements**
+- **Node.js**: v18.0.0 or higher
+- **RAM**: 4GB minimum, 8GB recommended
+- **Storage**: 500MB for application, 2GB+ for point cloud data
+- **Network**: Port 3000 available for local development
+
+### **Platform Support**
+
+#### **Windows**
+- **OS**: Windows 10/11 (64-bit)
+- **Node.js**: Download from [nodejs.org](https://nodejs.org/)
+- **Terminal**: Command Prompt, PowerShell, or Git Bash
+- **Browser**: Chrome, Firefox, Edge (latest versions)
+
+#### **Linux**
+- **OS**: Ubuntu 18.04+, CentOS 7+, or equivalent
+- **Node.js**: Install via package manager or [nodejs.org](https://nodejs.org/)
+- **Terminal**: Any modern terminal
+- **Browser**: Chrome, Firefox (latest versions)
+
+#### **macOS**
+- **OS**: macOS 10.15+ (Catalina or newer)
+- **Node.js**: Install via Homebrew or [nodejs.org](https://nodejs.org/)
+- **Terminal**: Terminal.app or iTerm2
+- **Browser**: Safari, Chrome, Firefox (latest versions)
+
+#### **WSL (Windows Subsystem for Linux)**
+- **OS**: Windows 10/11 with WSL 2 enabled
+- **Distribution**: Ubuntu 20.04+ recommended
+- **Node.js**: Install in WSL environment
+- **Access**: Use Windows browser to access `http://localhost:3000/`
+
+### **Performance Requirements**
 - Data processing: < 5 minutes for standard survey
 - Dashboard updates: < 2 minutes after processing
 - System availability: 99.9% uptime
 - Concurrent users: Support 100+ simultaneous users
 
-### Data Requirements
-- File formats: .laz, .tif input; DWG, DXF, IFC output
-- Storage: Scalable cloud storage with 7-year retention
-- Backup: Real-time replication with 24-hour recovery
-- Security: End-to-end encryption with role-based access
+### **Data Requirements**
+- **Input formats**: .laz, .tif files
+- **Output formats**: JSON, HTML, interactive 3D
+- **Storage**: Scalable with organized directory structure
+- **Security**: CSP headers and secure data handling
 
-### Integration Requirements
-- APIs: RESTful APIs for third-party integration
-- Formats: Industry-standard CAD and GIS formats
-- Protocols: Secure data transmission protocols
-- Standards: Compliance with industry CAD standards
+### **Network Requirements**
+- **Development**: Localhost access only
+- **Production**: Configurable port (default 3000)
+- **Firewall**: Allow inbound connections on configured port
+- **CORS**: Configurable for cross-origin requests
+
+## 📚 Documentation
+
+- **[System Use Cases](docs/USE_CASES.md)** - Detailed software requirements and user stories
+- **[Repository Structure](STRUCTURE.md)** - Complete file organization guide
+- **[Leadership Guide](docs/LEADERSHIP_GUIDE.md)** - Executive dashboard usage
+- **[Point Cloud Viewer Guide](docs/POINTCLOUD_VIEWER.md)** - 3D viewer documentation
+
+## 🤝 Contributing
+
+1. Fork the repository
+2. Create a feature branch: `git checkout -b feature/amazing-feature`
+3. Commit your changes: `git commit -m 'Add amazing feature'`
+4. Push to the branch: `git push origin feature/amazing-feature`
+5. Open a Pull Request
+
+## 🐛 Troubleshooting
+
+### Common Issues
+
+#### **Server won't start**
+
+**Windows:**
+- Check if port 3000 is available: `netstat -an | findstr :3000`
+- Verify Node.js version: `node --version` (should be 18+)
+- Try running as administrator if permissions issues occur
+
+**Linux/macOS/WSL:**
+- Check if port 3000 is available: `lsof -i :3000`
+- Verify Node.js version: `node --version` (should be 18+)
+- Kill any existing processes: `pkill -f "node app.js"`
+
+#### **Point cloud not displaying**
+- Check browser console for errors (F12 → Console)
+- Verify LAZ files are in `data/sample-files/` directory
+- Test API endpoint: 
+  - **Windows**: `curl http://localhost:3000/api/pointcloud/data` (if curl installed)
+  - **Linux/macOS/WSL**: `curl http://localhost:3000/api/pointcloud/data`
+- Try refreshing the browser page
+
+#### **Mouse controls not working**
+- Ensure JavaScript is enabled in browser
+- Check for Content Security Policy errors in browser console
+- Try refreshing the page
+- Test with different browser (Chrome, Firefox, Edge)
+
+#### **WSL Specific Issues**
+- If you can't access from Windows browser, check WSL networking:
+  ```bash
+  # Check if service is running
+  ps aux | grep "node app.js"
+  
+  # Check port binding
+  netstat -tlnp | grep :3000
+  ```
+- Try accessing via WSL IP address if localhost doesn't work:
+  ```bash
+  # Find WSL IP
+  ip addr show eth0
+  # Then access via http://[WSL_IP]:3000/
+  ```
+
+#### **Installation Issues**
+
+**Node.js not found:**
+- **Windows**: Download from [nodejs.org](https://nodejs.org/) and install
+- **Linux**: `sudo apt update && sudo apt install nodejs npm`
+- **macOS**: `brew install node` (requires Homebrew)
+- **WSL**: `sudo apt update && sudo apt install nodejs npm`
+
+**npm install fails:**
+- Clear npm cache: `npm cache clean --force`
+- Delete node_modules: `rm -rf node_modules` (Linux/macOS) or `rmdir /s node_modules` (Windows)
+- Reinstall: `npm install`
+
+**Permission errors:**
+- **Windows**: Run Command Prompt as Administrator
+- **Linux/macOS/WSL**: Don't use sudo with npm install in user directories
+
+### Getting Help
+
+If you encounter other issues:
+
+1. **Check the logs**: Look in `logs/combined.log` and `logs/error.log`
+2. **Test health endpoint**: `curl http://localhost:3000/api/health`
+3. **Run comprehensive tests**: `npm test`
+4. **Check Node.js version**: Must be 18 or higher
+
+## 📄 License
+
+This project is licensed under the MIT License - see the [LICENSE](LICENSE) file for details.
+
+## 🙏 Acknowledgments
+
+- Built with Express.js and Three.js
+- Enhanced terrain generation algorithms
+- Interactive 3D visualization capabilities
+- Professional CAD workflow integration
+
+---
+
+**Made with ❤️ for CAD professionals and project leaders**

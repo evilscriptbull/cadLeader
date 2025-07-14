@@ -1,0 +1,232 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>CAD Leadership Dashboard</title>
+    <script src="/socket.io/socket.io.js"></script>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body { 
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #1e3c72 0%, #2a5298 100%);
+            color: white; min-height: 100vh;
+        }
+        .header { 
+            background: rgba(0,0,0,0.3); padding: 20px; text-align: center;
+            border-bottom: 2px solid #ffd700;
+        }
+        .status-indicator { 
+            display: inline-block; width: 12px; height: 12px; 
+            border-radius: 50%; margin-right: 8px;
+        }
+        .operational { background-color: #00ff00; }
+        .dashboard { 
+            display: grid; grid-template-columns: 1fr 2fr 1fr; gap: 20px; 
+            padding: 20px; max-width: 1400px; margin: 0 auto;
+        }
+        .card {
+            background: rgba(255, 255, 255, 0.1); border-radius: 10px; 
+            padding: 20px; backdrop-filter: blur(10px);
+            border: 1px solid rgba(255, 255, 255, 0.2);
+        }
+        .card h3 { color: #ffd700; margin-bottom: 15px; font-size: 1.2em; }
+        .metric { 
+            display: flex; justify-content: space-between; align-items: center;
+            padding: 10px 0; border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+        }
+        .metric:last-child { border-bottom: none; }
+        .metric-value { font-weight: bold; color: #ffd700; }
+        .btn {
+            padding: 12px 24px; border: none; border-radius: 5px; cursor: pointer;
+            font-weight: bold; text-decoration: none; display: inline-block;
+            margin-right: 10px; margin-bottom: 10px; transition: all 0.3s ease;
+        }
+        .btn:hover { transform: translateY(-2px); box-shadow: 0 4px 8px rgba(0,0,0,0.3); }
+        .btn-primary { background: #ffd700; color: #000; }
+        .btn-secondary { background: #28a745; color: white; }
+        .btn-viewer { background: #6f42c1; color: white; }
+        .progress-grid { 
+            display: grid; grid-template-columns: repeat(4, 1fr); 
+            gap: 15px; margin-top: 15px;
+        }
+        .progress-item { 
+            text-align: center; padding: 15px; 
+            background: rgba(0,0,0,0.2); border-radius: 8px;
+        }
+        .progress-value { 
+            font-size: 1.5em; font-weight: bold; 
+            color: #ffd700; margin-bottom: 5px;
+        }
+        .status-display { 
+            background: rgba(0,0,0,0.3); padding: 15px; 
+            border-radius: 5px; margin-bottom: 15px; text-align: center;
+        }
+        .executive-summary { 
+            display: grid; grid-template-columns: 1fr 1fr; 
+            gap: 20px; margin-top: 15px;
+        }
+        .findings, .recommendations { 
+            background: rgba(255,255,255,0.05); padding: 15px; 
+            border-radius: 5px; margin-top: 15px;
+        }
+        .findings { border-left: 4px solid #ffd700; }
+        .recommendations { border-left: 4px solid #28a745; }
+        .activity-item { 
+            padding: 8px 0; border-bottom: 1px solid rgba(255,255,255,0.1); 
+            font-size: 0.9em;
+        }
+        .activity-item:last-child { border-bottom: none; }
+        @media (max-width: 1200px) { 
+            .dashboard { grid-template-columns: 1fr; }
+            .executive-summary { grid-template-columns: 1fr; }
+        }
+        @media (max-width: 768px) { 
+            .progress-grid { grid-template-columns: repeat(2, 1fr); }
+        }
+    </style>
+</head>
+<body>
+    <div class="header">
+        <h1>🎯 CAD Leadership Dashboard</h1>
+        <p><span class="status-indicator operational"></span>OPERATIONAL - R3 Pro Survey Analysis System</p>
+    </div>
+    <div class="dashboard">
+        <div class="card">
+            <h3>⚡ System Status</h3>
+            <div class="metric"><span>Server Status</span><span class="metric-value">ONLINE</span></div>
+            <div class="metric"><span>Data Processing</span><span class="metric-value">ACTIVE</span></div>
+            <div class="metric"><span>Last Update</span><span class="metric-value" id="lastUpdate">Live</span></div>
+            <div class="metric"><span>API Health</span><span class="metric-value">OPTIMAL</span></div>
+        </div>
+        <div class="card" style="grid-row: span 2;">
+            <h3>📊 R3 Pro Survey Analysis - Executive Summary</h3>
+            <div style="margin-bottom: 20px;">
+                <button id="loadBtn" class="btn btn-primary">📊 Refresh Survey Data</button>
+                <button id="testBtn" class="btn btn-secondary">🔗 Test Connection</button>
+                <a href="/pointcloud.html" class="btn btn-viewer">🎮 3D Point Cloud Viewer</a>
+            </div>
+            <div class="status-display">
+                <p id="statusMessage">✅ Dashboard ready! All survey data loaded and operational. <a href="/pointcloud.html" style="color: #ffd700; text-decoration: underline;">🎮 View in 3D</a></p>
+            </div>
+            <div class="executive-summary">
+                <div>
+                    <h4>📈 Project Status</h4>
+                    <div class="metric"><span>Status</span><span class="metric-value">ACTIVE</span></div>
+                    <div class="metric"><span>Completion</span><span class="metric-value">75%</span></div>
+                    <div class="metric"><span>Coverage</span><span class="metric-value">266.98 km²</span></div>
+                    <div class="metric"><span>Accuracy</span><span class="metric-value">±0.02m</span></div>
+                </div>
+                <div>
+                    <h4>📊 Technical Metrics</h4>
+                    <div class="metric"><span>Data Points</span><span class="metric-value">99,981,232</span></div>
+                    <div class="metric"><span>Point Density</span><span class="metric-value">374,491 pts/m²</span></div>
+                    <div class="metric"><span>Elevation Range</span><span class="metric-value">280m - 470m</span></div>
+                </div>
+            </div>
+            <h4 style="margin-top: 20px;">📈 Progress Indicators</h4>
+            <div class="progress-grid">
+                <div class="progress-item"><div class="progress-value">100%</div><small>Data Collection</small></div>
+                <div class="progress-item"><div class="progress-value">85%</div><small>Processing</small></div>
+                <div class="progress-item"><div class="progress-value">70%</div><small>Quality Assurance</small></div>
+                <div class="progress-item"><div class="progress-value">45%</div><small>Deliverables</small></div>
+            </div>
+            <div class="findings">
+                <h4>⚠️ Critical Findings</h4>
+                <p>• All metrics within acceptable parameters</p>
+                <p>• Point density optimal in 95% of survey area</p>
+            </div>
+            <div class="recommendations">
+                <h4>💡 Recommendations</h4>
+                <p>• Continue monitoring point density in sparse areas</p>
+                <p>• Validate elevation data against ground control points</p>
+                <p>• Prepare preliminary deliverables for stakeholder review</p>
+            </div>
+        </div>
+        <div class="card">
+            <h3>📋 Recent Activity</h3>
+            <div id="activityLog">
+                <div class="activity-item">🚀 Dashboard initialized successfully</div>
+                <div class="activity-item">📊 Survey data loaded (99.9M points)</div>
+                <div class="activity-item">✅ All systems operational</div>
+                <div class="activity-item">📈 Processing at 85% completion</div>
+                <div class="activity-item">🎮 3D viewer ready</div>
+            </div>
+        </div>
+    </div>
+    <script>
+        class DashboardController {
+            constructor() { this.init(); }
+            init() {
+                this.setupEventHandlers();
+                this.updateTimestamp();
+                this.startHeartbeat();
+                console.log('✅ CAD Leadership Dashboard initialized');
+            }
+            setupEventHandlers() {
+                const loadBtn = document.getElementById('loadBtn');
+                if (loadBtn) loadBtn.addEventListener('click', () => this.loadSurveyData());
+                const testBtn = document.getElementById('testBtn');
+                if (testBtn) testBtn.addEventListener('click', () => this.testConnection());
+            }
+            async loadSurveyData() {
+                this.updateStatus('📊 Loading survey data...', 'info');
+                try {
+                    const response = await fetch('/api/survey-analysis');
+                    const data = await response.json();
+                    if (response.ok) {
+                        this.updateStatus('✅ Survey data loaded successfully!', 'success');
+                        this.addActivity('📊 Survey data refreshed');
+                    } else {
+                        throw new Error(data.error || 'Failed to load data');
+                    }
+                } catch (error) {
+                    this.updateStatus('❌ Failed to load survey data: ' + error.message, 'error');
+                }
+            }
+            async testConnection() {
+                this.updateStatus('🔗 Testing API connection...', 'info');
+                try {
+                    const response = await fetch('/api/health');
+                    const data = await response.json();
+                    if (response.ok) {
+                        this.updateStatus('✅ API connection successful!', 'success');
+                        this.addActivity('🔗 Connection test passed');
+                    } else {
+                        throw new Error('API health check failed');
+                    }
+                } catch (error) {
+                    this.updateStatus('❌ Connection test failed: ' + error.message, 'error');
+                }
+            }
+            updateStatus(message, type = 'info') {
+                const statusEl = document.getElementById('statusMessage');
+                if (statusEl) {
+                    statusEl.innerHTML = message;
+                    statusEl.style.color = type === 'success' ? '#28a745' : type === 'error' ? '#dc3545' : '#ffd700';
+                }
+            }
+            addActivity(message) {
+                const logEl = document.getElementById('activityLog');
+                if (logEl) {
+                    const item = document.createElement('div');
+                    item.className = 'activity-item';
+                    item.textContent = `${new Date().toLocaleTimeString()} - ${message}`;
+                    logEl.insertBefore(item, logEl.firstChild);
+                    while (logEl.children.length > 10) {
+                        logEl.removeChild(logEl.lastChild);
+                    }
+                }
+            }
+            updateTimestamp() {
+                const timestampEl = document.getElementById('lastUpdate');
+                if (timestampEl) timestampEl.textContent = new Date().toLocaleTimeString();
+            }
+            startHeartbeat() {
+                setInterval(() => { this.updateTimestamp(); }, 60000);
+            }
+        }
+        document.addEventListener('DOMContentLoaded', () => { new DashboardController(); });
+    </script>
+</body>
+</html>

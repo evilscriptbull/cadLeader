@@ -1,0 +1,179 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>CAD Leader - Point Cloud Viewer</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #1e3c72 0%, #2a5298 100%);
+            color: white;
+            overflow: hidden;
+        }
+        
+        .header {
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            background: rgba(0,0,0,0.8);
+            padding: 10px 20px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            z-index: 1000;
+            backdrop-filter: blur(10px);
+        }
+        
+        .header h1 {
+            font-size: 1.2em;
+            color: #ffd700;
+        }
+        
+        .controls {
+            display: flex;
+            gap: 10px;
+            align-items: center;
+        }
+        
+        .btn {
+            padding: 8px 16px;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            font-weight: bold;
+            text-decoration: none;
+            display: inline-block;
+        }
+        
+        .btn-primary { background: #ffd700; color: #000; }
+        .btn-secondary { background: #28a745; color: white; }
+        .btn-info { background: #17a2b8; color: white; }
+        .btn-danger { background: #dc3545; color: white; }
+        
+        .viewer-container {
+            position: absolute;
+            top: 60px;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: #000;
+        }
+        
+        .info-panel {
+            position: fixed;
+            top: 70px;
+            right: 10px;
+            width: 300px;
+            background: rgba(0,0,0,0.8);
+            border-radius: 10px;
+            padding: 15px;
+            backdrop-filter: blur(10px);
+            z-index: 500;
+        }
+        
+        .loading {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            text-align: center;
+            z-index: 100;
+        }
+        
+        .loading h2 {
+            color: #ffd700;
+            margin-bottom: 20px;
+        }
+        
+        .spinner {
+            border: 4px solid rgba(255, 215, 0, 0.3);
+            border-top: 4px solid #ffd700;
+            border-radius: 50%;
+            width: 50px;
+            height: 50px;
+            animation: spin 1s linear infinite;
+            margin: 0 auto;
+        }
+        
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+        
+        .stats {
+            margin-top: 10px;
+            font-size: 0.9em;
+        }
+        
+        .stats div {
+            margin: 5px 0;
+        }
+        
+        #potreeContainer {
+            width: 100%;
+            height: 100%;
+        }
+    </style>
+</head>
+<body>
+    <div class="header">
+        <h1>🎯 CAD Leadership Dashboard - Point Cloud Viewer</h1>
+        <div class="controls">
+            <a href="/" class="btn btn-primary">📊 Dashboard</a>
+            <button id="fullscreenBtn" class="btn btn-secondary">🔍 Fullscreen</button>
+            <button id="resetViewBtn" class="btn btn-info">🔄 Reset View</button>
+            <button id="measureBtn" class="btn btn-info">📏 Measure</button>
+        </div>
+    </div>
+    
+    <div class="viewer-container">
+        <div id="loading" class="loading">
+            <h2>🚀 Loading Point Cloud Viewer</h2>
+            <div class="spinner"></div>
+            <p id="loadingStatus">Initializing 3D visualization...</p>
+            <div style="margin-top: 10px; font-size: 0.9em;">
+                <div id="loadingProgress">Starting up...</div>
+            </div>
+        </div>
+        
+        <div id="potreeContainer"></div>
+    </div>
+    
+    <div class="info-panel">
+        <h3>📋 Survey Information</h3>
+        <div class="stats">
+            <div><strong>📊 Total Points:</strong> <span id="pointCount">99,981,232</span></div>
+            <div><strong>📏 Coverage:</strong> <span id="coverage">266.98 km²</span></div>
+            <div><strong>🎯 Accuracy:</strong> <span id="accuracy">±0.02m</span></div>
+            <div><strong>📈 Density:</strong> <span id="density">374,491 pts/m²</span></div>
+            <div><strong>🏔️ Elevation:</strong> <span id="elevation">280m - 470m</span></div>
+        </div>
+        
+        <hr style="margin: 15px 0; border-color: rgba(255,255,255,0.3);">
+        
+        <h4>🎮 Controls</h4>
+        <div style="font-size: 0.8em; line-height: 1.4;">
+            <div><strong>Mouse:</strong> Rotate view</div>
+            <div><strong>Scroll:</strong> Zoom in/out</div>
+            <div><strong>Right-click:</strong> Pan view</div>
+            <div><strong>Double-click:</strong> Focus point</div>
+        </div>
+        
+        <hr style="margin: 15px 0; border-color: rgba(255,255,255,0.3);">
+        
+        <div id="viewerStatus">
+            <strong>Status:</strong> <span style="color: #ffd700;">Initializing...</span>
+        </div>
+    </div>
+
+    <script src="/js/pointcloud-viewer.js"></script>
+</body>
+</html>
