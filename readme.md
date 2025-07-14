@@ -220,9 +220,6 @@ type logs\combined.log
 - `npm test` - Run comprehensive test suite
 - `npm run health` - Quick health check
 - `npm run setup` - Complete setup process
-- `npm run build` - Build for production (all platforms)
-- `npm run build-win` - Build for Windows
-- `npm run build-linux` - Build for Linux
 
 ### Platform-Specific Notes
 
