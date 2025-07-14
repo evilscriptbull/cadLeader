@@ -295,9 +295,11 @@ type logs\combined.log
 ## 📚 Documentation
 
 - **[System Use Cases](docs/USE_CASES.md)** - Detailed software requirements and user stories
-- **[Repository Structure](STRUCTURE.md)** - Complete file organization guide
+- **[Repository Structure](docs/STRUCTURE.md)** - Complete file organization guide
 - **[Leadership Guide](docs/LEADERSHIP_GUIDE.md)** - Executive dashboard usage
 - **[Point Cloud Viewer Guide](docs/POINTCLOUD_VIEWER.md)** - 3D viewer documentation
+- **[Cleanup Summary](docs/CLEANUP_SUMMARY.md)** - Repository cleanup and reorganization notes
+- **[README Cleanup](docs/README_CLEANUP.md)** - Documentation cleanup process
 
 ## 🤝 Contributing
 
