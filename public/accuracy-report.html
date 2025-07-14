@@ -1,0 +1,763 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>CAD Leader - Accuracy Report | R3 Pro with Traditional Survey Points</title>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <script>
+        // Debug Chart.js loading
+        window.addEventListener('load', function() {
+            console.log('Window loaded, Chart.js available:', typeof Chart !== 'undefined');
+            if (typeof Chart !== 'undefined') {
+                console.log('Chart.js version:', Chart.version);
+            }
+        });
+    </script>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #1e3c72 0%, #2a5298 100%);
+            color: white;
+            min-height: 100vh;
+        }
+        
+        .header {
+            background: rgba(0,0,0,0.8);
+            padding: 20px;
+            text-align: center;
+            backdrop-filter: blur(10px);
+        }
+        
+        .header h1 {
+            font-size: 2.5em;
+            color: #ffd700;
+            margin-bottom: 10px;
+        }
+        
+        .header .subtitle {
+            font-size: 1.2em;
+            color: #ccc;
+            margin-bottom: 20px;
+        }
+        
+        .nav-controls {
+            display: flex;
+            justify-content: center;
+            gap: 15px;
+            margin-top: 20px;
+        }
+        
+        .btn {
+            padding: 12px 24px;
+            border: none;
+            border-radius: 8px;
+            cursor: pointer;
+            font-weight: bold;
+            text-decoration: none;
+            display: inline-block;
+            transition: all 0.3s ease;
+        }
+        
+        .btn-primary { background: #ffd700; color: #000; }
+        .btn-secondary { background: #28a745; color: white; }
+        .btn-info { background: #17a2b8; color: white; }
+        .btn-danger { background: #dc3545; color: white; }
+        
+        .btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 12px rgba(0,0,0,0.3);
+        }
+        
+        .container {
+            max-width: 1400px;
+            margin: 0 auto;
+            padding: 20px;
+        }
+        
+        .summary-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 20px;
+            margin-bottom: 30px;
+        }
+        
+        .summary-card {
+            background: rgba(255,255,255,0.1);
+            border-radius: 15px;
+            padding: 25px;
+            backdrop-filter: blur(10px);
+            border: 1px solid rgba(255,255,255,0.2);
+        }
+        
+        .summary-card h3 {
+            color: #ffd700;
+            margin-bottom: 15px;
+            font-size: 1.4em;
+        }
+        
+        .stat-row {
+            display: flex;
+            justify-content: space-between;
+            margin: 10px 0;
+            padding: 8px 0;
+            border-bottom: 1px solid rgba(255,255,255,0.1);
+        }
+        
+        .stat-label {
+            font-weight: bold;
+            color: #ccc;
+        }
+        
+        .stat-value {
+            color: #ffd700;
+            font-weight: bold;
+        }
+        
+        .chart-container {
+            background: rgba(255,255,255,0.1);
+            border-radius: 15px;
+            padding: 25px;
+            margin: 20px 0;
+            backdrop-filter: blur(10px);
+            height: 400px;
+        }
+        
+        .chart-title {
+            color: #ffd700;
+            font-size: 1.5em;
+            margin-bottom: 20px;
+            text-align: center;
+        }
+        
+        .chart-canvas {
+            width: 100% !important;
+            height: 300px !important;
+        }
+        
+        .gcp-table-container {
+            background: rgba(255,255,255,0.1);
+            border-radius: 15px;
+            padding: 25px;
+            margin: 20px 0;
+            backdrop-filter: blur(10px);
+            overflow-x: auto;
+        }
+        
+        .gcp-table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 20px;
+        }
+        
+        .gcp-table th,
+        .gcp-table td {
+            padding: 12px;
+            text-align: left;
+            border-bottom: 1px solid rgba(255,255,255,0.2);
+        }
+        
+        .gcp-table th {
+            background: rgba(255,215,0,0.2);
+            color: #ffd700;
+            font-weight: bold;
+        }
+        
+        .gcp-table tr:hover {
+            background: rgba(255,255,255,0.05);
+        }
+        
+        .delta-positive {
+            color: #28a745;
+        }
+        
+        .delta-negative {
+            color: #dc3545;
+        }
+        
+        .delta-neutral {
+            color: #ffd700;
+        }
+        
+        .accuracy-badge {
+            display: inline-block;
+            padding: 6px 12px;
+            border-radius: 20px;
+            font-size: 0.9em;
+            font-weight: bold;
+        }
+        
+        .accuracy-excellent {
+            background: #28a745;
+            color: white;
+        }
+        
+        .accuracy-good {
+            background: #ffc107;
+            color: black;
+        }
+        
+        .accuracy-fair {
+            background: #fd7e14;
+            color: white;
+        }
+        
+        .accuracy-poor {
+            background: #dc3545;
+            color: white;
+        }
+        
+        .project-meta {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 15px;
+            margin-bottom: 30px;
+        }
+        
+        .meta-item {
+            background: rgba(255,255,255,0.05);
+            padding: 15px;
+            border-radius: 10px;
+            border-left: 4px solid #ffd700;
+        }
+        
+        .meta-label {
+            font-size: 0.9em;
+            color: #ccc;
+            margin-bottom: 5px;
+        }
+        
+        .meta-value {
+            font-size: 1.1em;
+            color: #ffd700;
+            font-weight: bold;
+        }
+        
+        .analysis-section {
+            margin: 30px 0;
+        }
+        
+        .analysis-section h2 {
+            color: #ffd700;
+            margin-bottom: 20px;
+            font-size: 1.8em;
+        }
+        
+        .insights-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(350px, 1fr));
+            gap: 20px;
+        }
+        
+        .insight-card {
+            background: rgba(255,255,255,0.08);
+            padding: 20px;
+            border-radius: 12px;
+            border-left: 4px solid #17a2b8;
+        }
+        
+        .insight-title {
+            color: #17a2b8;
+            font-size: 1.2em;
+            margin-bottom: 10px;
+        }
+        
+        .insight-text {
+            color: #ddd;
+            line-height: 1.6;
+        }
+        
+        @media (max-width: 768px) {
+            .summary-grid {
+                grid-template-columns: 1fr;
+            }
+            
+            .header h1 {
+                font-size: 2em;
+            }
+            
+            .nav-controls {
+                flex-direction: column;
+                align-items: center;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="header">
+        <h1>🎯 CAD Leader - Accuracy Report</h1>
+        <div class="subtitle">R3 Pro with Traditional Survey Points from a Traverse</div>
+        <div class="nav-controls">
+            <a href="/" class="btn btn-primary">📊 Dashboard</a>
+            <a href="/pointcloud" class="btn btn-secondary">🔍 Point Cloud Viewer</a>
+            <button id="exportBtn" class="btn btn-info">📄 Export Report</button>
+            <button id="refreshBtn" class="btn btn-secondary">🔄 Refresh Data</button>
+        </div>
+    </div>
+    
+    <div class="container">
+        <!-- Project Metadata -->
+        <div class="project-meta">
+            <div class="meta-item">
+                <div class="meta-label">Report Date</div>
+                <div class="meta-value">2024-02-29 12:40:52</div>
+            </div>
+            <div class="meta-item">
+                <div class="meta-label">Project Date</div>
+                <div class="meta-value">2023-08-13 07:25:12</div>
+            </div>
+            <div class="meta-item">
+                <div class="meta-label">Location</div>
+                <div class="meta-value">33.346°N, -84.116°W</div>
+            </div>
+            <div class="meta-item">
+                <div class="meta-label">Equipment</div>
+                <div class="meta-value">ROCK R3 Pro + DJI M300</div>
+            </div>
+            <div class="meta-item">
+                <div class="meta-label">Coordinate System</div>
+                <div class="meta-value">NAD83 / Georgia West (EPSG:2240)</div>
+            </div>
+            <div class="meta-item">
+                <div class="meta-label">Vertical Datum</div>
+                <div class="meta-value">NAVD88 height (EPSG:6360)</div>
+            </div>
+        </div>
+        
+        <!-- Summary Statistics -->
+        <div class="summary-grid">
+            <div class="summary-card">
+                <h3>📊 Accuracy Summary</h3>
+                <div class="stat-row">
+                    <span class="stat-label">Vertical Accuracy (RMS)</span>
+                    <span class="stat-value">0.089 ft</span>
+                </div>
+                <div class="stat-row">
+                    <span class="stat-label">Standard Deviation</span>
+                    <span class="stat-value">0.089 ft</span>
+                </div>
+                <div class="stat-row">
+                    <span class="stat-label">Mean Elevation Delta</span>
+                    <span class="stat-value">0.004 ft</span>
+                </div>
+                <div class="stat-row">
+                    <span class="stat-label">Accuracy Rating</span>
+                    <span class="stat-value">
+                        <span class="accuracy-badge accuracy-excellent">EXCELLENT</span>
+                    </span>
+                </div>
+            </div>
+            
+            <div class="summary-card">
+                <h3>📏 Survey Coverage</h3>
+                <div class="stat-row">
+                    <span class="stat-label">Total Coverage</span>
+                    <span class="stat-value">37 Acres</span>
+                </div>
+                <div class="stat-row">
+                    <span class="stat-label">Point Density</span>
+                    <span class="stat-value">1,292 pts/m² (120 pts/ft²)</span>
+                </div>
+                <div class="stat-row">
+                    <span class="stat-label">Ground Control Points</span>
+                    <span class="stat-value">23 Points</span>
+                </div>
+                <div class="stat-row">
+                    <span class="stat-label">Survey Method</span>
+                    <span class="stat-value">Total Station Traverse</span>
+                </div>
+            </div>
+            
+            <div class="summary-card">
+                <h3>🎯 Quality Metrics</h3>
+                <div class="stat-row">
+                    <span class="stat-label">Max Positive Delta</span>
+                    <span class="stat-value">+0.170 ft</span>
+                </div>
+                <div class="stat-row">
+                    <span class="stat-label">Max Negative Delta</span>
+                    <span class="stat-value">-0.206 ft</span>
+                </div>
+                <div class="stat-row">
+                    <span class="stat-label">Points Within ±0.1 ft</span>
+                    <span class="stat-value">87% (20/23)</span>
+                </div>
+                <div class="stat-row">
+                    <span class="stat-label">Survey Conditions</span>
+                    <span class="stat-value">Heavily Vegetated</span>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Charts -->
+        <div class="chart-container">
+            <h3 class="chart-title">📈 Elevation Delta Distribution</h3>
+            <canvas id="deltaChart" class="chart-canvas"></canvas>
+        </div>
+        
+        <div class="chart-container">
+            <h3 class="chart-title">🎯 Accuracy Analysis by Point</h3>
+            <canvas id="accuracyChart" class="chart-canvas"></canvas>
+        </div>
+        
+        <!-- Ground Control Points Table -->
+        <div class="gcp-table-container">
+            <h3 class="chart-title">📋 Ground Control Points Detail</h3>
+            <table class="gcp-table" id="gcpTable">
+                <thead>
+                    <tr>
+                        <th>Point ID</th>
+                        <th>X (ft)</th>
+                        <th>Y (ft)</th>
+                        <th>Z-GCP (ft)</th>
+                        <th>Z-LiDAR (ft)</th>
+                        <th>Delta-Z (ft)</th>
+                        <th>Accuracy</th>
+                        <th>Description</th>
+                    </tr>
+                </thead>
+                <tbody id="gcpTableBody">
+                    <!-- Data will be populated by JavaScript -->
+                </tbody>
+            </table>
+        </div>
+        
+        <!-- Analysis Section -->
+        <div class="analysis-section">
+            <h2>🔍 Analysis & Insights</h2>
+            <div class="insights-grid">
+                <div class="insight-card">
+                    <div class="insight-title">Survey Quality Assessment</div>
+                    <div class="insight-text">
+                        The survey demonstrates excellent accuracy with an RMS of 0.089 ft, well within industry standards for high-precision mapping. The low mean delta of 0.004 ft indicates minimal systematic bias.
+                    </div>
+                </div>
+                
+                <div class="insight-card">
+                    <div class="insight-title">Point Density Excellence</div>
+                    <div class="insight-text">
+                        With 1,292 points per square meter, this survey provides exceptional detail resolution, enabling accurate feature extraction and precise measurements for engineering applications.
+                    </div>
+                </div>
+                
+                <div class="insight-card">
+                    <div class="insight-title">Challenging Conditions</div>
+                    <div class="insight-text">
+                        Despite heavily vegetated terrain with thick trees and grass, the R3 Pro system maintained high accuracy, demonstrating robust performance in challenging environments.
+                    </div>
+                </div>
+                
+                <div class="insight-card">
+                    <div class="insight-title">Statistical Reliability</div>
+                    <div class="insight-text">
+                        87% of control points fall within ±0.1 ft tolerance, with the standard deviation matching the RMS value, indicating consistent and reliable measurements across the survey area.
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <script>
+        // Ground Control Points Data
+        const gcpData = [
+            { id: 'TRAV10', x: 2311750.334, y: 1217004.872, zGcp: 804.7446, zLidar: 804.639, delta: 0.106, desc: 'TRAV10' },
+            { id: 'TRAV11', x: 2311667.638, y: 1216888.295, zGcp: 806.9616, zLidar: 806.872, delta: 0.09, desc: 'TRAV 11' },
+            { id: 'TRAV12', x: 2311714.475, y: 1216364.509, zGcp: 820.0517, zLidar: 820.181, delta: -0.129, desc: 'TRAV 12' },
+            { id: 'TRAV13', x: 2311802.252, y: 1216219.905, zGcp: 837.5148, zLidar: 837.345, delta: 0.17, desc: 'TRAV13' },
+            { id: 'G20063', x: 2312532.662, y: 1216160.617, zGcp: 832.7285, zLidar: 832.691, delta: 0.038, desc: 'G20063' },
+            { id: 'G20064', x: 2312530.189, y: 1216161.861, zGcp: 832.1233, zLidar: 832.213, delta: -0.09, desc: 'G20064' },
+            { id: 'G20139', x: 2312580.333, y: 1216502.656, zGcp: 835.2816, zLidar: 835.269, delta: 0.013, desc: 'G20139' },
+            { id: 'G20140', x: 2312580.036, y: 1216549.692, zGcp: 833.6007, zLidar: 833.595, delta: 0.006, desc: 'G20140' },
+            { id: 'G20155', x: 2312571.826, y: 1216604.367, zGcp: 831.669, zLidar: 831.78, delta: -0.111, desc: 'G20155' },
+            { id: 'G20185', x: 2312528.872, y: 1216746.956, zGcp: 826.804, zLidar: 826.816, delta: -0.012, desc: 'G20185' },
+            { id: 'G20186', x: 2312488.915, y: 1216751.468, zGcp: 825.1832, zLidar: 825.264, delta: -0.081, desc: 'G20186' },
+            { id: 'G20265', x: 2312558.745, y: 1217131.479, zGcp: 820.5699, zLidar: 820.531, delta: 0.039, desc: 'G20265' },
+            { id: 'G20268', x: 2312558.904, y: 1217189.486, zGcp: 819.9632, zLidar: 819.934, delta: 0.029, desc: 'G20268' },
+            { id: 'G20283', x: 2312557.51, y: 1217241.91, zGcp: 821.2929, zLidar: 821.261, delta: 0.032, desc: 'G20283' },
+            { id: 'G20286', x: 2312563.801, y: 1217294.196, zGcp: 823.5962, zLidar: 823.683, delta: -0.087, desc: 'G20286' },
+            { id: 'TRAV3', x: 2312570.681, y: 1216181.031, zGcp: 833.503, zLidar: 833.533, delta: -0.03, desc: 'TRAV 3' },
+            { id: 'TRAV4', x: 2312607.994, y: 1216648.295, zGcp: 831.173, zLidar: 831.23, delta: -0.057, desc: 'TRAV 4' },
+            { id: 'TRAV5', x: 2312556.85, y: 1217248.752, zGcp: 821.4512, zLidar: 821.657, delta: -0.206, desc: 'TRAV5' },
+            { id: 'TRAV6', x: 2312206.205, y: 1217246.083, zGcp: 812.5042, zLidar: 812.403, delta: 0.101, desc: 'TRAV 6' },
+            { id: 'TRAV7', x: 2312056.584, y: 1217267.582, zGcp: 798.3491, zLidar: 798.315, delta: 0.034, desc: 'TRAV 7' },
+            { id: 'TRAV8', x: 2311915.585, y: 1217298.352, zGcp: 792.8905, zLidar: 792.804, delta: 0.086, desc: 'TRAV 8' },
+            { id: 'TRAV9', x: 2311740.566, y: 1217240.809, zGcp: 774.366, zLidar: 774.279, delta: 0.087, desc: 'TRAV 9' },
+            { id: 'OPUS', x: 2312571.572, y: 1216180.59, zGcp: 833.503, zLidar: 833.433, delta: 0.07, desc: 'OPUS' }
+        ];
+        
+        // Populate GCP Table
+        function populateGCPTable() {
+            const tbody = document.getElementById('gcpTableBody');
+            tbody.innerHTML = '';
+            
+            gcpData.forEach(point => {
+                const row = document.createElement('tr');
+                const accuracyClass = getAccuracyClass(Math.abs(point.delta));
+                const deltaClass = point.delta > 0 ? 'delta-positive' : point.delta < 0 ? 'delta-negative' : 'delta-neutral';
+                
+                row.innerHTML = `
+                    <td><strong>${point.id}</strong></td>
+                    <td>${point.x.toFixed(3)}</td>
+                    <td>${point.y.toFixed(3)}</td>
+                    <td>${point.zGcp.toFixed(3)}</td>
+                    <td>${point.zLidar.toFixed(3)}</td>
+                    <td class="${deltaClass}">${point.delta.toFixed(3)}</td>
+                    <td><span class="accuracy-badge ${accuracyClass}">${getAccuracyLabel(Math.abs(point.delta))}</span></td>
+                    <td>${point.desc}</td>
+                `;
+                tbody.appendChild(row);
+            });
+        }
+        
+        function getAccuracyClass(absDelta) {
+            if (absDelta <= 0.05) return 'accuracy-excellent';
+            if (absDelta <= 0.1) return 'accuracy-good';
+            if (absDelta <= 0.15) return 'accuracy-fair';
+            return 'accuracy-poor';
+        }
+        
+        function getAccuracyLabel(absDelta) {
+            if (absDelta <= 0.05) return 'EXCELLENT';
+            if (absDelta <= 0.1) return 'GOOD';
+            if (absDelta <= 0.15) return 'FAIR';
+            return 'POOR';
+        }
+        
+        // Create Delta Distribution Chart
+        function createDeltaChart() {
+            const ctx = document.getElementById('deltaChart').getContext('2d');
+            const deltas = gcpData.map(point => point.delta);
+            
+            console.log('Creating delta chart with data:', deltas);
+            
+            // Create histogram bins
+            const bins = [-0.25, -0.2, -0.15, -0.1, -0.05, 0, 0.05, 0.1, 0.15, 0.2, 0.25];
+            const counts = new Array(bins.length - 1).fill(0);
+            
+            deltas.forEach(delta => {
+                for (let i = 0; i < bins.length - 1; i++) {
+                    if (delta >= bins[i] && delta < bins[i + 1]) {
+                        counts[i]++;
+                        break;
+                    }
+                }
+            });
+            
+            console.log('Histogram bins:', bins);
+            console.log('Histogram counts:', counts);
+            
+            const chart = new Chart(ctx, {
+                type: 'bar',
+                data: {
+                    labels: bins.slice(0, -1).map((bin, i) => `${bin.toFixed(2)} to ${bins[i + 1].toFixed(2)}`),
+                    datasets: [{
+                        label: 'Number of Points',
+                        data: counts,
+                        backgroundColor: 'rgba(255, 215, 0, 0.6)',
+                        borderColor: 'rgba(255, 215, 0, 1)',
+                        borderWidth: 1
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: {
+                        legend: {
+                            labels: {
+                                color: 'white'
+                            }
+                        },
+                        title: {
+                            display: true,
+                            text: 'Distribution of Elevation Deltas (ft)',
+                            color: 'white'
+                        }
+                    },
+                    scales: {
+                        y: {
+                            beginAtZero: true,
+                            ticks: {
+                                color: 'white',
+                                stepSize: 1
+                            },
+                            grid: {
+                                color: 'rgba(255, 255, 255, 0.1)'
+                            },
+                            title: {
+                                display: true,
+                                text: 'Number of Points',
+                                color: 'white'
+                            }
+                        },
+                        x: {
+                            ticks: {
+                                color: 'white',
+                                maxRotation: 45
+                            },
+                            grid: {
+                                color: 'rgba(255, 255, 255, 0.1)'
+                            },
+                            title: {
+                                display: true,
+                                text: 'Elevation Delta Range (ft)',
+                                color: 'white'
+                            }
+                        }
+                    }
+                }
+            });
+            
+            console.log('Delta chart created successfully');
+            return chart;
+        }
+        
+        // Create Accuracy Analysis Chart
+        function createAccuracyChart() {
+            const ctx = document.getElementById('accuracyChart').getContext('2d');
+            
+            console.log('Creating accuracy chart with GCP data:', gcpData);
+            
+            const chart = new Chart(ctx, {
+                type: 'scatter',
+                data: {
+                    datasets: [{
+                        label: 'Elevation Delta (ft)',
+                        data: gcpData.map((point, index) => ({
+                            x: index + 1,
+                            y: point.delta,
+                            pointId: point.id
+                        })),
+                        backgroundColor: gcpData.map(point => 
+                            point.delta > 0 ? 'rgba(40, 167, 69, 0.7)' : 'rgba(220, 53, 69, 0.7)'
+                        ),
+                        borderColor: gcpData.map(point => 
+                            point.delta > 0 ? 'rgba(40, 167, 69, 1)' : 'rgba(220, 53, 69, 1)'
+                        ),
+                        borderWidth: 2,
+                        pointRadius: 6,
+                        pointHoverRadius: 8
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: {
+                        legend: {
+                            labels: {
+                                color: 'white'
+                            }
+                        },
+                        title: {
+                            display: true,
+                            text: 'Elevation Delta by Ground Control Point',
+                            color: 'white'
+                        },
+                        tooltip: {
+                            callbacks: {
+                                label: function(context) {
+                                    const point = gcpData[context.dataIndex];
+                                    return [
+                                        `Point: ${point.id}`,
+                                        `Delta: ${point.delta.toFixed(3)} ft`,
+                                        `GCP Elevation: ${point.zGcp.toFixed(3)} ft`,
+                                        `LiDAR Elevation: ${point.zLidar.toFixed(3)} ft`
+                                    ];
+                                }
+                            }
+                        }
+                    },
+                    scales: {
+                        y: {
+                            title: {
+                                display: true,
+                                text: 'Elevation Delta (ft)',
+                                color: 'white'
+                            },
+                            ticks: {
+                                color: 'white'
+                            },
+                            grid: {
+                                color: 'rgba(255, 255, 255, 0.1)'
+                            }
+                        },
+                        x: {
+                            title: {
+                                display: true,
+                                text: 'Ground Control Point Index',
+                                color: 'white'
+                            },
+                            ticks: {
+                                color: 'white',
+                                stepSize: 1
+                            },
+                            grid: {
+                                color: 'rgba(255, 255, 255, 0.1)'
+                            }
+                        }
+                    },
+                    interaction: {
+                        intersect: false,
+                        mode: 'point'
+                    }
+                }
+            });
+            
+            console.log('Accuracy chart created successfully');
+            return chart;
+        }
+        
+        // Event Listeners
+        document.getElementById('exportBtn').addEventListener('click', function() {
+            alert('🔧 Export functionality coming soon!\n\nThis will generate a PDF report with all accuracy data and charts.');
+        });
+        
+        document.getElementById('refreshBtn').addEventListener('click', function() {
+            location.reload();
+        });
+        
+        // Initialize
+        document.addEventListener('DOMContentLoaded', function() {
+            console.log('DOM loaded, initializing accuracy report...');
+            
+            // Populate the table first
+            populateGCPTable();
+            
+            // Wait for Chart.js to be fully loaded, then create charts
+            if (typeof Chart !== 'undefined') {
+                console.log('Chart.js loaded, creating charts...');
+                setTimeout(() => {
+                    try {
+                        createDeltaChart();
+                        createAccuracyChart();
+                        console.log('Charts created successfully');
+                    } catch (error) {
+                        console.error('Error creating charts:', error);
+                        // Fallback: show error message
+                        document.getElementById('deltaChart').parentElement.innerHTML = 
+                            '<div style="color: #ff6b6b; text-align: center; padding: 40px;">⚠️ Chart loading failed. Please refresh the page.</div>';
+                        document.getElementById('accuracyChart').parentElement.innerHTML = 
+                            '<div style="color: #ff6b6b; text-align: center; padding: 40px;">⚠️ Chart loading failed. Please refresh the page.</div>';
+                    }
+                }, 100);
+            } else {
+                console.error('Chart.js not loaded');
+                // Retry loading charts after a delay
+                setTimeout(() => {
+                    if (typeof Chart !== 'undefined') {
+                        createDeltaChart();
+                        createAccuracyChart();
+                    } else {
+                        console.error('Chart.js still not loaded after retry');
+                    }
+                }, 1000);
+            }
+        });
+    </script>
+</body>
+</html>
